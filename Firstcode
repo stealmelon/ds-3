@@ -1,0 +1,420 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef int ElemType;
+typedef struct TNode * BinTree;
+struct TNode
+{
+    ElemType data;
+    struct TNode * LChild;
+    struct TNode * RChild;
+};
+
+void CreateBinTree(BinTree *BT)//创建二叉树
+{
+    int n;
+    scanf("%d", &n);
+    if(n == 0)
+        *BT = NULL;
+    else
+    {
+        *BT = (BinTree)malloc(sizeof(struct TNode));
+        (*BT)->data = n;
+        CreateBinTree(&((*BT)->LChild));
+        CreateBinTree(&((*BT)->RChild));
+    }
+}
+
+void InorderTraversal(BinTree BT)//二叉树中序遍历
+{
+    if(BT)
+    {
+        InorderTraversal(BT->LChild);
+        printf("%d ", BT->data);
+        InorderTraversal(BT->RChild);
+    }
+}
+
+void PreorderTraversal(BinTree BT)//二叉树先序遍历
+{
+    if(BT)
+    {
+        printf("%d ", BT->data);
+        InorderTraversal(BT->LChild);
+        InorderTraversal(BT->RChild);
+    }
+}
+
+void PostorderTraversal(BinTree BT)//二叉树后序遍历
+{
+    if(BT)
+    {
+        InorderTraversal(BT->LChild);
+        InorderTraversal(BT->RChild);
+        printf("%d ", BT->data);
+    }
+}
+
+void PreorderPrintLeaves(BinTree BT)//输出叶子结点
+{
+    if(BT)
+    {
+        if(!BT->LChild && !BT->RChild)
+            printf("%d ", BT->data);
+        PreorderPrintLeaves(BT->LChild);
+        PreorderPrintLeaves(BT->RChild);
+    }
+}
+
+void LevelorderTraversal(BinTree BT)//二叉树层序遍历
+{
+    if(BT)
+    {
+        BinTree b[100];
+        b[0] = BT;
+        int first = 0;
+        int rear = 1;
+        while(first < rear)
+        {
+            printf("%d ",b[first]->data);
+            if(b[first]->LChild)
+            {
+                b[rear++] = b[first]->LChild;
+                
+            }
+            if(b[first]->RChild)
+            {
+                b[rear++] = b[first]->RChild;
+            }
+            first++;
+        }
+    }
+}
+
+int GetHeight(BinTree BT)//计算二叉树树高
+{
+    int HL, HR, MaxH;
+    if(BT)
+    {
+        HL = GetHeight(BT->LChild);
+        HR = GetHeight(BT->RChild);
+        MaxH = HL > HR ? HL : HR;
+        return (MaxH + 1);
+    }
+    else
+        return 0;
+}
+
+int IsBST(BinTree BT)//判断是否二叉搜索树
+{
+    if(BT == NULL)
+        return 1;
+    else
+    {
+        if(BT->LChild == NULL && BT->RChild == NULL)
+            return 1;
+        else if(BT->LChild == NULL && BT->RChild != NULL)
+        {
+            if(BT->data > BT->RChild->data)
+                return 0;
+            else
+                return IsBST(BT->RChild);
+        }
+        else if(BT->LChild != NULL && BT->RChild == NULL)
+        {
+            if(BT->LChild->data > BT->data)
+                return 0;
+            else
+                return IsBST(BT->LChild);
+        }
+        else
+        {
+            if(BT->data > BT->RChild->data || BT->LChild->data > BT->data)
+                return 0;
+            else
+                return IsBST(BT->LChild) && IsBST(BT->LChild);
+        }
+    }
+}
+
+BinTree dgFind(BinTree BST, ElemType X)//二叉搜索树递归查找
+{
+    if(!BST)
+        return NULL;
+    if(X > BST->data)
+        return dgFind(BST->RChild, X);
+    else if(X < BST->data)
+        return dgFind(BST->LChild, X);
+    else
+        return BST;
+}
+
+BinTree ddFind(BinTree BST, ElemType X)//二叉搜索树迭代查找
+{
+    while(BST)
+    {
+        if(X > BST->data)
+            BST = BST->RChild;
+        if(X < BST->data)
+            BST = BST->LChild;
+        else break;
+    }
+    return BST;
+}
+
+int FindMin(BinTree BST)//二叉搜索树查找最小值
+{
+    if(!BST)
+        return NULL;
+    else if(!BST->LChild)
+        return BST->data;
+    else
+        return FindMin(BST->LChild);
+}
+
+int FindMax(BinTree BST)//二叉搜索树查找最大值
+{
+    if(BST)
+    {
+        while(BST->RChild)
+            BST = BST->RChild;
+    }
+    return BST->data;
+}
+
+BinTree InsertBinTree(BinTree BT,ElemType e)//向二叉搜索树插入结点
+{
+    BinTree s, f, p;
+    s = (BinTree)malloc(sizeof(struct TNode));
+    s->data = e;
+    s->LChild = NULL;
+    s->RChild = NULL;
+    if(BT == NULL)
+    {
+        return s;
+    }
+    f = NULL;
+    p = BT;
+    while(p != NULL)
+    {
+        f = p;
+        if(p->data > e)
+            p = p->LChild;
+        else
+            p = p->RChild;
+    }
+    if(f->data > e)
+        f->LChild = s;
+    else
+        f->RChild = s;
+    return BT;
+}
+
+BinTree Delete(BinTree BST, ElemType X)//删除二叉搜索树的结点
+{
+    BinTree tmp;
+    if(!BST)
+        printf("要删除的元素未找到！\n");
+    else
+    {
+        if(X < BST->data)
+            BST->LChild = Delete(BST->LChild, X);
+        else if(X > BST->data)
+            BST->RChild = Delete(BST->RChild, X);
+        else
+        {
+            if(BST->LChild && BST->RChild)
+            {
+                tmp->data = FindMin(BST->RChild);
+                BST->data = tmp->data;
+                BST->RChild = Delete(BST->RChild, BST->data);
+            }
+            else
+            {
+                tmp = BST;
+                if(!BST->LChild)
+                    BST = BST->RChild;
+                else
+                    BST = BST->LChild;
+                free(tmp);
+            }
+        }
+    }
+    return BST;
+}
+
+void PrintTree(BinTree BT, int nLayer)//按竖向树状打印的二叉树
+{
+    if(BT == NULL)
+        return;
+    PrintTree(BT->RChild, nLayer+1);
+    for(int i = 0; i < nLayer; i++)
+    {
+        printf("   ");
+    }
+    printf("%d\n", BT->data);
+    PrintTree(BT->LChild, nLayer+1);
+}
+
+
+int pathdata[100];
+int pathlevel[100];
+
+
+int main()
+{
+    printf("请先创建一颗二叉树:\n");
+    BinTree bt;
+    CreateBinTree(&bt);
+    printf("a.竖向树状打印二叉树\n");
+    printf("b.中序遍历二叉树\n");
+    printf("c.先序遍历二叉树\n");
+    printf("d.后序遍历二叉树\n");
+    printf("e.层序遍历二叉树\n");
+    printf("f.求二叉树的树高\n");
+    printf("g.输出二叉树的叶子结点\n");
+    printf("h.判断是否二叉搜索树\n");
+    printf("i.向二叉搜索树中插入一个结点\n");
+    printf("j.删除二叉搜索树中的结点\n");
+    printf("k.查找二叉搜索树中的最大值\n");
+    printf("l.查找二叉搜索树中的最小值\n");
+    printf("m.查找二叉搜索树中的结点(递归)\n");
+    printf("n.查找二叉搜索树中的结点(迭代)\n");
+    char flag;
+    while(flag != '0')
+    {
+        printf("请选择你要进行的操作:");
+        scanf("%c", &flag);
+        switch(flag)
+        {
+            case 'a':
+                printf("a.竖向树状打印二叉树\n");
+                PrintTree(bt, 1);
+                break;
+            case 'b':
+                printf("b.中序遍历二叉树\n");
+                printf("该树的中序遍历为：\n");
+                InorderTraversal(bt);
+                printf("\n");
+                break;
+            case 'c':
+                printf("c.先序遍历二叉树\n");
+                printf("该树的先序遍历为：\n");
+                PreorderTraversal(bt);
+                printf("\n");
+                break;
+            case 'd':
+                printf("d.后序遍历二叉树\n");
+                printf("该树的后序遍历为：\n");
+                PostorderTraversal(bt);
+                printf("\n");
+                break;
+            case 'e':
+                printf("e.层序遍历二叉树\n");
+                printf("该树的层序遍历为：\n");
+                LevelorderTraversal(bt);
+                printf("\n");
+                break;
+            case 'f':{
+                printf("f.求二叉树的树高\n");
+                printf("该树的树高为：");
+                int h = GetHeight(bt);
+                printf("%d\n", h);
+                break;
+            }
+                
+            case 'g':
+                printf("g.输出二叉树的叶子结点\n");
+                printf("该树的叶子结点为：");
+                PreorderPrintLeaves(bt);
+                printf("\n");
+                break;
+            case 'h':
+                printf("h.判断是否二叉搜索树\n");
+                if(IsBST(bt) == 1)
+                    printf("\n该树是二叉搜索树！\n");
+                else
+                    printf("\n该树不是二叉搜索树！\n");
+                break;
+            case 'i':{
+                printf("i.向二叉搜索树中插入一个结点\n");
+                ElemType x;
+                printf("请输入要插入的结点:");
+                scanf("%d", &x);
+                InsertBinTree(bt, x);
+                //??????
+                break;
+            }
+            case 'j':{
+                printf("j.删除二叉搜索树中的结点\n");
+                ElemType x;
+                printf("请输入要删除的结点:");
+                scanf("%d", &x);
+                Delete(bt, x);
+                break;
+            }
+            case 'k':{
+                printf("k.查找二叉搜索树中的最大值\n");
+                int max = 0;
+                max = FindMax(bt);
+                printf("该树中的最大值为:");
+                printf("%d\n", max);
+                break;
+            }
+            case 'l':{
+                printf("l.查找二叉搜索树中的最小值\n");
+                int min = 0;
+                min = FindMin(bt);
+                printf("该树中的最小值为:");
+                printf("%d\n", min);
+                break;
+            }
+            case 'm':{
+                printf("m.查找二叉搜索树中的结点(递归)\n");
+                ElemType x;
+                printf("请输入要查找的结点:");
+                scanf("%d", &x);
+                dgFind(bt, x);
+                //???
+                break;
+            }
+            case 'n':{
+                printf("n.查找二叉搜索树中的结点(迭代)\n");
+                ElemType x;
+                printf("请输入要查找的结点:");
+                scanf("%d", &x);
+                ddFind(bt, x);
+                //???
+                break;
+            }
+                //        default:
+                //            printf("您的输入有误，请重新输入！\n");
+                //            break;
+        }
+    }
+    
+    //    bt=InsertBiTree(bt,47);
+    //    PrintTree(bt, 1);
+    //    bt=InsertBiTree(bt,12);
+    //    bt=InsertBiTree(bt,17);
+    //    bt=InsertBiTree(bt,8);
+    //    bt=InsertBiTree(bt,6);
+    //    bt=InsertBiTree(bt,28);
+    //    bt=InsertBiTree(bt,25);
+    //    bt=InsertBiTree(bt,56);
+    //    bt=InsertBiTree(bt,89);
+    //    printf(" \n InsertBiTree(&bt,47)\n");
+    //    PrintTree(bt, 1);
+    //    InsertBiTree(bt,101);
+    //    printf("\n InsertBiTree(&bt,101) \n");
+    //    PrintTree(bt, 1);
+    
+    
+    return 0;
+}
+
+//1 2 3 4 5 0 0 6 0 0 0 7 0 8 0 0 9 5 0 0 8 0 9 0 0
+//3 5 8 2 0 0 0 9 0 4 0 0 7 12 0 13 5 0 0 0 0
+//30 11 4 8 0 0 0 0 20 0 7 0 3 0 0
+//83 79 54 32 0 0 60 58 0 0 0 80 0 0 90 0 100 93 0 0 104 0 130 0 0
+
